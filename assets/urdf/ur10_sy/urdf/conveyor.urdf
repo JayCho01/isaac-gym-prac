@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<robot  name="conveyor_belt">
+  <material name="black">
+    <color rgba="0 0 0 1"/>
+  </material>
+  <link name="base_link">
+    <inertial>
+      <origin xyz="1.15972439062802E-17 -0.0273162100367329 1.02144955943776E-17" rpy="0 0 0" />
+      <mass value="2430.68583470577" />
+      <inertia ixx="431.198140853202" ixy="2.18658245479853E-14" ixz="4.38017677684144E-14" iyy="7514.31711977665" iyz="3.72364768160213E-15" izz="7545.20095484556" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/base_link.obj" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/base_link.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="belt_link">
+    <inertial>
+      <origin xyz="2.84 0.00499999999999995 2.76334119905601E-17" rpy="0 0 0" />
+      <mass value="56.8" />
+      <color rgba="1 1 0 0"/> 
+      <inertia ixx="4.73380666666667" ixy="3.71142749699624E-34" ixz="2.20830761084774E-15" iyy="157.442026666667" iyz="2.30486925841449E-19" izz="152.709166666667" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/belt_link.obj" />
+      </geometry>
+    <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/belt_link.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="belt_joint" type="prismatic">
+    <origin xyz="-2.83 0 0.3" rpy="1.5708 0 0" />
+    <parent link="base_link" />
+    <child link="belt_link" />
+    <axis xyz="-1 0 0" />
+    <limit lower="0" upper="0.01" effort="0" velocity="10" />
+  </joint>
+</robot>

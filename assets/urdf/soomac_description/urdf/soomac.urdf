@@ -1,0 +1,241 @@
+<?xml version="1.0" ?>
+<robot name="soomac" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find soomac_description)/urdf/materials.xacro" />
+<xacro:include filename="$(find soomac_description)/urdf/soomac.trans" />
+<xacro:include filename="$(find soomac_description)/urdf/soomac.gazebo" />
+
+
+
+
+
+
+
+
+
+
+<link name="base_link">
+  <inertial>
+    <origin xyz="1.3820185154499092e-05 -0.0005045956311069184 0.020522282272331886" rpy="0 0 0"/>
+    <mass value="1.5026706265949556"/>
+    <inertia ixx="0.000984" iyy="0.000985" izz="0.001544" ixy="0.0" iyz="-1e-06" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link2_1">
+  <inertial>
+    <origin xyz="-0.004855588947938449 -1.5745210662496947e-05 0.0391777283631466" rpy="0 0 0"/>
+    <mass value="1.718809170564294"/>
+    <inertia ixx="0.001233" iyy="0.000991" izz="0.001466" ixy="-4e-06" iyz="-1e-06" ixz="5.4e-05"/>
+  </inertial>
+  <visual>
+    <origin xyz="-7.4e-05 -0.000224 -0.038032" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-7.4e-05 -0.000224 -0.038032" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link3_1">
+  <inertial>
+    <origin xyz="0.0202161635847504 -4.0144523101581786e-07 0.1780099079809248" rpy="0 0 0"/>
+    <mass value="1.0936292604935065"/>
+    <inertia ixx="0.015694" iyy="0.015708" izz="0.000195" ixy="-0.0" iyz="-0.0" ixz="-0.000126"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.024372 -0.015535 -0.082303" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link3_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.024372 -0.015535 -0.082303" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link3_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link4_1">
+  <inertial>
+    <origin xyz="-0.01977195703514885 0.21560279425657583 -1.3265169511611496e-05" rpy="0 0 0"/>
+    <mass value="1.030675926945332"/>
+    <inertia ixx="0.012836" iyy="0.000214" izz="0.012863" ixy="2.7e-05" iyz="-0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.064747 -0.015535 -0.385553" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link4_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.064747 -0.015535 -0.385553" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link4_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link5_1">
+  <inertial>
+    <origin xyz="-0.019524198771248544 0.02035587176782283 -0.0072839708015024485" rpy="0 0 0"/>
+    <mass value="0.549830169942123"/>
+    <inertia ixx="0.000269" iyy="0.000137" izz="0.000218" ixy="1.1e-05" iyz="5e-05" ixz="-4e-06"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.024997 -0.343285 -0.38554" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link5_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.024997 -0.343285 -0.38554" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link5_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+
+<link name="link6_gripper_1">
+  <inertial>
+    <origin xyz="6.660080069166921e-06 0.031298940076902815 -0.008506254943594194" rpy="0 0 0"/>
+    <mass value="0.6694674405992905"/>
+    <inertia ixx="0.000271" iyy="0.000428" izz="0.000393" ixy="-0.0" iyz="-2.2e-05" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.004497 -0.391785 -0.38554" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link6_gripper_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.004497 -0.391785 -0.38554" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link6_gripper_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link7_finger_r_1">
+  <inertial>
+    <origin xyz="-0.25575823794491925 0.1487141700629765 -0.3449996385481648" rpy="0 0 0"/>
+    <mass value="0.2185972441854391"/>
+    <inertia ixx="0.000156" iyy="6.2e-05" izz="0.000125" ixy="-2e-05" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.241867 -0.318206 -0.73054" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.241867 -0.318206 -0.73054" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link8_finger_l_1">
+  <inertial>
+    <origin xyz="-0.2670413034528619 0.14871019177007172 -0.34500057461094463" rpy="0 0 0"/>
+    <mass value="0.21857349417540464"/>
+    <inertia ixx="0.000156" iyy="6.2e-05" izz="0.000125" ixy="2e-05" iyz="-0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.289967 -0.318206 -0.73054" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.289967 -0.318206 -0.73054" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+
+
+
+
+<joint name="link2_to_base_link" type="revolute">
+  <origin xyz="7.4e-05 0.000224 0.038032" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="link2_1"/>
+  <axis xyz="0.0 -0.0 1.0"/>
+</joint>
+
+<joint name="link3_to_link2" type="revolute">
+  <origin xyz="0.024298 0.015311 0.044271" rpy="0 0 0"/>
+  <parent link="link2_1"/>
+  <child link="link3_1"/>
+  <axis xyz="1.0 -0.0 -0.0"/>
+</joint>
+
+<joint name="link4_to_link3" type="revolute">
+  <origin xyz="0.040375 0.0 0.30325" rpy="0 0 0"/>
+  <parent link="link3_1"/>
+  <child link="link4_1"/>
+  <axis xyz="1.0 0.0 -0.0"/>
+</joint>
+
+<joint name="link5_to_link4" type="revolute">
+  <origin xyz="-0.03975 0.32775 -1.3e-05" rpy="0 0 0"/>
+  <parent link="link4_1"/>
+  <child link="link5_1"/>
+  <axis xyz="-1.0 -0.0 0.0"/>
+</joint>
+
+<joint name="link6_to_link5" type="revolute">
+  <origin xyz="-0.0205 0.0485 0.0" rpy="0 0 0"/>
+  <parent link="link5_1"/>
+  <child link="link6_gripper_1"/>
+  <axis xyz="0.0 1.0 0.0"/>
+</joint>
+
+<joint name="link7_to_link6" type="prismatic">
+  <origin xyz="0.23447 -0.073579 0.345" rpy="0 0 0"/>
+  <parent link="link6_gripper_1"/>
+  <child link="link7_finger_r_1"/>
+  <axis xyz="-1.0 -0.0 0.0"/>
+  <limit  lower="0.0" upper="0.0281" effort="100" velocity="100"/>
+</joint>
+
+<joint name="link8_to_link6" type="prismatic">
+  <origin xyz="0.28842 -0.073579 0.345" rpy="0 0 0"/>
+  <parent link="link6_gripper_1"/>
+  <child link="link8_finger_l_1"/>
+  <axis xyz="1.0 -0.0 0.0"/>
+  <limit  lower="0.0" upper="0.0281" effort="100" velocity="100"/>
+</joint>
+
+</robot>
