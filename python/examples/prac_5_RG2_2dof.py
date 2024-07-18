@@ -515,6 +515,7 @@ while not gym.query_viewer_has_closed(viewer):
     grip_acts = torch.cat((0.5 * grip_sep, 0.5 * grip_sep), 1).to(device)
     pos_action[:, 6] = grip_acts[:, 0]
     pos_action[:, 7] = -grip_acts[:, 1]
+    # gripper의 회전 방향에 따라 - 설정해주기
 
 
     # Deploy actions
