@@ -167,6 +167,10 @@
             <mass value="0.365"/>
         </inertial>
     </link>
+
+
+
+    
     <joint name="shoulder_pan_joint" type="revolute">
         <origin rpy="0 0 0" xyz="0 0 0.1273"/>
         <axis xyz="0 0 1" />
