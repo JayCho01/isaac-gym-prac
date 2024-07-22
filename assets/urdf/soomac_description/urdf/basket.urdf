@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<robot name="basket">
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://soomac_description/meshes/Simple_basket_box_no-hole_v2.stl" scale="0.002 0.002 0.002"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://soomac_description/meshes/Simple_basket_box_no-hole_v2.stl" scale="0.002 0.002 0.002"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.0" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+    </inertial>
+  </link>
+</robot>
