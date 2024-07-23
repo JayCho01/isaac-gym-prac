@@ -2,7 +2,7 @@
 <robot name="nut_m4_tight_SI">
 
   <material name="green">
-    <color rgba="0.50 0.70 0.30 0.8"/>
+    <color rgba="0.50 0.60 0.30 0.8"/>
   </material>
 
   <link name="nut_m4_tight_SI">

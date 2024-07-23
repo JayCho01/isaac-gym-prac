@@ -1,14 +1,20 @@
 <?xml version="1.0"?>
 <robot name="basket">
+
+  <material name="brown">
+    <color rgba="0.60 0.50 0.40 1"/>
+  </material>
+
   <link name="base_link">
     <visual>
       <geometry>
-        <mesh filename="package://soomac_description/meshes/Simple_basket_box_no-hole_v2.stl" scale="1 1 1"/>
+        <mesh filename="package://soomac_description/meshes/burger_box/files/BOTTOM_SMALL_BURGERBOX_STL.stl" scale="0.003 0.003 0.003"/>
       </geometry>
+      <material name="brown"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://soomac_description/meshes/Simple_basket_box_no-hole_v2.stl" scale="1 1 1"/>
+        <mesh filename="package://soomac_description/meshes/burger_box/files/BOTTOM_SMALL_BURGERBOX_STL.stl" scale="0.003 0.003 0.003"/>
       </geometry>
     </collision>
     <inertial>

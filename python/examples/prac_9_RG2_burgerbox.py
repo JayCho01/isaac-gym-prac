@@ -20,7 +20,7 @@ def control_ik(dpose, damping, j_eef, num_envs):
     # solve damped least squares
     j_eef_T = torch.transpose(j_eef, 1, 2) #: j_eef 텐서의 1번째와 2번째 차원을 서로 바꾸어 전치
     lmbda = torch.eye(6, device=device) * (damping ** 2) # 6*6 단위행렬 생성 및 댐핑계수 제곱하여 정규화행렬 구성
-    u = (j_eef_T @ torch.inverse(j_eef @ j_eef_T + lmbda) @ dpose).view(num_envs, 5) #댐핑된 최소 자승 문제를 풀고 야코비안의 전치행렬과 역행렬을 곱해 ee 자세변화량 dpose를 계산 
+    u = (j_eef_T @ torch.inverse(j_eef @ j_eef_T + lmbda) @ dpose).view(num_envs, 6) #댐핑된 최소 자승 문제를 풀고 야코비안의 전치행렬과 역행렬을 곱해 ee 자세변화량 dpose를 계산 
     return u
 
 # dpose: (num_envs, 6) 형태의 텐서로, 원하는 엔드 이펙터 자세 변화량을 나타냅니다 (위치 및 방향 오차)
@@ -31,12 +31,10 @@ def control_ik(dpose, damping, j_eef, num_envs):
 
 class ScrewFSM:
 
-    def __init__(self, sim_dt, nut_height, bolt_height, screw_speed, screw_limit_angle, device, env_idx):
+    def __init__(self, sim_dt, nut_height, talbe_height, device, env_idx):
         self._sim_dt = sim_dt
         self._nut_height = nut_height
-        self._bolt_height = bolt_height
-        self._screw_speed = screw_speed
-        self._screw_limit_angle = screw_limit_angle
+        self._talbe_height = talbe_height
         self.device = device
         self.env_idx = env_idx
 
@@ -44,18 +42,18 @@ class ScrewFSM:
         self._state = "go_above_nut"
 
         # control / position constants:
-        self._above_offset = torch.tensor([0, 0, 0.1 + self._bolt_height], dtype=torch.float32, device=self.device)
+        self._above_offset = torch.tensor([0, 0, 0.1 + self._talbe_height], dtype=torch.float32, device=self.device)
         self._grip_offset = torch.tensor([0, 0, 0.053 + self._nut_height], dtype=torch.float32, device=self.device)
-        self._lift_offset = torch.tensor([0, 0, 0.15 + self._bolt_height], dtype=torch.float32, device=self.device)
-        self._above_bolt_offset = torch.tensor([0, 0, self._bolt_height], dtype=torch.float32, device=self.device) + self._grip_offset
-        self._on_bolt_offset = torch.tensor([0, 0, 0.5 * self._bolt_height + 0.025], dtype=torch.float32, device=self.device) + self._grip_offset
-        self._hand_down_quat = torch.tensor([-0.707107, 0.0, 0.0, 0.707107], dtype=torch.float32, device=self.device)
+        self._lift_offset = torch.tensor([0, 0, 0.15 + self._talbe_height], dtype=torch.float32, device=self.device)
+
+        self._above_basket_offset = torch.tensor([-0.06, 0.06, self._talbe_height + 0.15], dtype=torch.float32, device=self.device) + self._grip_offset
+        self._on_basket_offset = torch.tensor([-0.06, 0.06, 0.5 * self._talbe_height - 0.02], dtype=torch.float32, device=self.device) + self._grip_offset
+
+        self._hand_down_quat = torch.tensor([0, 1, 0, 0], dtype=torch.float32, device=self.device)
         grab_angle = torch.tensor([np.pi / 6.0], dtype=torch.float32, device=self.device)
         grab_axis = torch.tensor([0, 0, 1], dtype=torch.float32, device=self.device)
         grab_quat = quat_from_angle_axis(grab_angle, grab_axis).squeeze()
         self._nut_grab_q = quat_mul(grab_quat, self._hand_down_quat)
-        self._screw_angle = torch.tensor([0.0], dtype=torch.float32, device=self.device)
-        self._screw_axis = torch.tensor([0, 0, 1], dtype=torch.float32, device=self.device)
 
         self._dpose = torch.zeros(6, dtype=torch.float32, device=self.device)
         self._gripper_separation = 0.0
@@ -69,7 +67,7 @@ class ScrewFSM:
         return torch.norm(self._dpose, p=2)
 
     # returns
-    def update(self, nut_pose, bolt_pose, hand_pose, current_gripper_sep):
+    def update(self, nut_pose, basket_pose, hand_pose, current_gripper_sep):
         newState = self._state
         if self._state == "go_above_nut":
             self._gripper_separation = 0.4
@@ -96,81 +94,36 @@ class ScrewFSM:
         elif self._state == "lift":
             self._gripper_separation = 0.0
             target_pos = nut_pose[:3]
-            target_pos[2] = bolt_pose[2] + 0.004
+            target_pos[2] = basket_pose[2] + 0.004
             target_pos = target_pos + self._lift_offset
             error = self.get_dp_from_target(target_pos, self._hand_down_quat, hand_pose)
             if error < self._error_offset:
-                newState = "go_above_bolt"
-        elif self._state == "go_above_bolt":
+                newState = "go_above_basket"
+        elif self._state == "go_above_basket":
             self._gripper_separation = 0.01
-            target_pos = bolt_pose[:3]
-            target_pos = target_pos + self._above_bolt_offset
+            target_pos = basket_pose[:3]
+            target_pos = target_pos + self._above_basket_offset
             error = self.get_dp_from_target(target_pos, self._hand_down_quat, hand_pose)
-            if error < self._error_offset:
-                newState = "go_on_bolt"
-        elif self._state == "go_on_bolt":
+            if error * 0.8 < self._error_offset :
+                newState = "go_on_basket"
+        elif self._state == "go_on_basket":
             self._gripper_separation = 0.01
-            target_pos = bolt_pose[:3]
-            target_pos[2] = bolt_pose[2]
-            target_pos = target_pos + self._on_bolt_offset
+            target_pos = basket_pose[:3]
+            target_pos[2] = basket_pose[2]
+            target_pos = target_pos + self._on_basket_offset
             error = self.get_dp_from_target(target_pos, self._hand_down_quat, hand_pose)
             if error < self._error_offset * 1.2:
                 newState = "loosen_grip"
         elif self._state == "loosen_grip":
             target_sep = 0.2
             self._gripper_separation = target_sep
-            target_pos = bolt_pose[:3]
-            target_pos = target_pos + self._on_bolt_offset
+            target_pos = basket_pose[:3]
+            target_pos = target_pos + self._on_basket_offset
             error = self.get_dp_from_target(target_pos, self._hand_down_quat, hand_pose)
             un_gripped = current_gripper_sep > target_sep * 0.98
             if error < self._error_offset and un_gripped:
-                self._screw_angle[0] = 0.0
-                newState = "screw_motion"
-        elif self._state == "screw_motion":
-            target_sep = 0.01
-            self._gripper_separation = target_sep
-            target_pos = bolt_pose[:3]
-            target_pos[2] = nut_pose[2]
-            target_pos = target_pos + self._grip_offset
-            self._screw_angle[0] = self._screw_angle[0] - self._sim_dt * self._screw_speed
-            screw_quat = quat_from_angle_axis(self._screw_angle, self._screw_axis).squeeze()
-            self.get_dp_from_target(target_pos, quat_mul(screw_quat, self._hand_down_quat), hand_pose)
-            if self._screw_angle[0] < -self._screw_limit_angle:
-                newState = "ungrip_screw"
-        elif self._state == "ungrip_screw":
-            target_sep = 0.6
-            self._gripper_separation = target_sep
-            target_pos = bolt_pose[:3]
-            target_pos[2] = nut_pose[2]
-            target_pos = target_pos + self._grip_offset
-            screw_quat = quat_from_angle_axis(self._screw_angle, self._screw_axis).squeeze()
-            self.get_dp_from_target(target_pos, quat_mul(screw_quat, self._hand_down_quat), hand_pose)
-            un_gripped = current_gripper_sep > target_sep * 0.98
-            if un_gripped:
-                newState = "rotate_back"
-        elif self._state == "rotate_back":
-            target_sep = 0.6
-            self._gripper_separation = target_sep
-            target_pos = bolt_pose[:3]
-            target_pos[2] = nut_pose[2]
-            target_pos = target_pos + self._grip_offset
-            self._screw_angle[0] = self._screw_angle[0] + self._sim_dt * 2.0 * self._screw_speed
-            screw_quat = quat_from_angle_axis(self._screw_angle, self._screw_axis).squeeze()
-            self.get_dp_from_target(target_pos, quat_mul(screw_quat, self._hand_down_quat), hand_pose)
-            if self._screw_angle[0] > 0.99 * self._screw_limit_angle:
-                newState = "back_to_screw_grip"
-        elif self._state == "back_to_screw_grip":
-            target_sep = 0.01
-            self._gripper_separation = target_sep
-            target_pos = bolt_pose[:3]
-            target_pos[2] = nut_pose[2]
-            target_pos = target_pos + self._grip_offset
-            screw_quat = quat_from_angle_axis(self._screw_angle, self._screw_axis).squeeze()
-            error = self.get_dp_from_target(target_pos, quat_mul(screw_quat, self._hand_down_quat), hand_pose)
-            gripped = (current_gripper_sep < target_sep * 1.01)
-            if error < 2e-3 and gripped:
-                self._screw_angle[0] = self._screw_limit_angle
-                newState = "screw_motion"
+                newState = "go_above_nut"
+       
 
         if newState != self._state:
             self._state = newState
@@ -201,7 +154,7 @@ custom_parameters = [
     {"name": "--num_envs", "type": int, "default": 1, "help": "Number of environments to create"},
 ]
 args = gymutil.parse_arguments(
-    description="Franka Jacobian Inverse Kinematics (IK) Nut-Bolt Screwing",
+    description="Franka Jacobian Inverse Kinematics (IK) Nut pick and place",
     custom_parameters=custom_parameters,
 )
 
@@ -258,24 +211,24 @@ asset_options = gymapi.AssetOptions()
 asset_options.fix_base_link = True
 table_asset = gym.create_box(sim, table_dims.x, table_dims.y, table_dims.z, asset_options)
 
-# create bolt asset
-bolt_file = "urdf/nut_bolt/bolt_m4_tight_SI_5x.urdf"
-bolt_options = gymapi.AssetOptions()
-bolt_options.flip_visual_attachments = False  # default = False
-bolt_options.fix_base_link = True
-bolt_options.thickness = 0.0  # default = 0.02 (not overridden in .cpp)
-bolt_options.density = 800.0  # 7850.0
-bolt_options.armature = 0.0  # default = 0.0
-bolt_options.linear_damping = 0.0  # default = 0.0
-bolt_options.max_linear_velocity = 1000.0  # default = 1000.0
-bolt_options.angular_damping = 0.0  # default = 0.5
-bolt_options.max_angular_velocity = 1000.0  # default = 64.0
-bolt_options.disable_gravity = False  # default = False
-bolt_options.enable_gyroscopic_forces = True  # default = True
-bolt_asset = gym.load_asset(sim, asset_root, bolt_file, bolt_options)
+# create basket asset
+basket_file = "urdf/soomac_description/urdf/burgerbox.urdf"
+basket_options = gymapi.AssetOptions()
+basket_options.flip_visual_attachments = False  # default = False
+basket_options.fix_base_link = True
+basket_options.thickness = 0.0  # default = 0.02 (not overridden in .cpp)
+basket_options.density = 800.0  # 7850.0
+basket_options.armature = 0.0  # default = 0.0
+basket_options.linear_damping = 0.0  # default = 0.0
+basket_options.max_linear_velocity = 1000.0  # default = 1000.0
+basket_options.angular_damping = 0.0  # default = 0.5
+basket_options.max_angular_velocity = 1000.0  # default = 64.0
+basket_options.disable_gravity = False  # default = False
+basket_options.enable_gyroscopic_forces = True  # default = True
+basket_asset = gym.load_asset(sim, asset_root, basket_file, basket_options)
 
 # create nut asset
-nut_file = "urdf/nut_bolt/nut_m4_tight_SI_5x.urdf"
+nut_file = "urdf/nut_bolt/green_stuff.urdf"
 nut_options = gymapi.AssetOptions()
 nut_options.flip_visual_attachments = False  # default = False
 nut_options.fix_base_link = False
@@ -296,7 +249,7 @@ nut_asset = gym.load_asset(sim, asset_root, nut_file, nut_options)
 #box_asset = gym.create_box(sim, box_size, box_size, box_size, asset_options)
 
 # load franka asset
-franka_asset_file = "urdf/soomac_description/urdf/soomac.urdf"
+franka_asset_file = "urdf/ur10_sy/urdf/ur10_gripper_2dof.urdf"
 asset_options = gymapi.AssetOptions()
 asset_options.armature = 0.01
 asset_options.fix_base_link = True
@@ -311,29 +264,24 @@ franka_upper_limits = franka_dof_props["upper"]
 
 franka_ranges = franka_upper_limits - franka_lower_limits
 franka_mids = 0.3 * (franka_upper_limits + franka_lower_limits)
-# print(franka_upper_limits, franka_lower_limits,franka_ranges,franka_mids)
 
-#[ 2.8973  1.7628  2.8973 -0.0698  2.8973  3.7525  2.8973  0.04    0.04  ] 
-#[-2.8973 -1.7628 -2.8973 -3.0718 -2.8973 -0.0175 -2.8973  0.      0.    ] 
-#[5.7946  3.5256   5.7946  3.002   5.7946  3.77    5.7946  0.04    0.04  ] 
-#[ 0.      0.      0.     -0.94248  0.     1.1205001 0.    0.012   0.012 ]
 
 # use position drive for all dofs
-franka_dof_props["driveMode"][:5].fill(gymapi.DOF_MODE_POS)
-franka_dof_props["stiffness"][:5].fill(150.0)
-franka_dof_props["damping"][:5].fill(40.0)
+franka_dof_props["driveMode"][:6].fill(gymapi.DOF_MODE_POS)
+franka_dof_props["stiffness"][:6].fill(150.0)
+franka_dof_props["damping"][:6].fill(40.0)
 # grippers
-franka_dof_props["driveMode"][5:].fill(gymapi.DOF_MODE_POS)
-franka_dof_props["stiffness"][5:].fill(200.0)
-franka_dof_props["damping"][5:].fill(40.0)
+franka_dof_props["driveMode"][6:].fill(gymapi.DOF_MODE_POS)
+franka_dof_props["stiffness"][6:].fill(200.0)
+franka_dof_props["damping"][6:].fill(40.0)
 
 # default dof states and position targets
 franka_num_dofs = gym.get_asset_dof_count(franka_asset)
 default_dof_pos = np.zeros(franka_num_dofs, dtype=np.float32)
 #default_dof_pos[:6] = franka_mids[:6] 초기설정
-default_dof_pos[:5] = [-1.50, -0.18, 0.38, 1.35, 0.00] 
+default_dof_pos[:6] = [0.00, -1.22, 0.71, 5.10, -1.56, 1.95] 
 # grippers open
-default_dof_pos[5:] = [0.028, 0.028]
+default_dof_pos[6:] = [0.10, -0.10]
 
 default_dof_state = np.zeros(franka_num_dofs, gymapi.DofState.dtype)
 default_dof_state["pos"] = default_dof_pos
@@ -343,7 +291,7 @@ default_dof_pos_tensor = to_torch(default_dof_pos, device=device)
 
 # get link index of panda hand, which we will use as end effector
 franka_link_dict = gym.get_asset_rigid_body_dict(franka_asset)
-franka_hand_index = franka_link_dict["link6_gripper_1"]
+franka_hand_index = franka_link_dict["hand_link"]
 
 # configure env grid
 num_envs = args.num_envs
@@ -353,13 +301,14 @@ env_lower = gymapi.Vec3(-spacing, -spacing, 0.0)
 env_upper = gymapi.Vec3(spacing, spacing, spacing)
 print("Creating %d environments" % num_envs)
 
+
 franka_pose = gymapi.Transform()
 franka_pose.p = gymapi.Vec3(0, 0, 0)
 
 table_pose = gymapi.Transform()
-table_pose.p = gymapi.Vec3(0.5, 0.0, 0.5 * table_dims.z)
-bolt_pose = gymapi.Transform()
+table_pose.p = gymapi.Vec3(0.7, 0.0, 0.5 * table_dims.z)
 nut_pose = gymapi.Transform()
+basket_pose = gymapi.Transform()
 
 ###############################################################################
 
@@ -368,7 +317,7 @@ fsm_device = 'cpu'
 
 envs = []
 nut_idxs = []
-bolt_idxs = []
+basket_idxs = []
 hand_idxs = []
 fsms = []
 
@@ -385,29 +334,11 @@ for i in range(num_envs):
     # add table
     table_handle = gym.create_actor(env, table_asset, table_pose, "table", i, 0)
 
-    # add bolt
-    bolt_pose.p.x = table_pose.p.x + np.random.uniform(-0.1, 0.1)
-    bolt_pose.p.y = table_pose.p.y + np.random.uniform(-0.3, 0.0)
-    bolt_pose.p.z = table_dims.z
-    bolt_pose.r = gymapi.Quat.from_axis_angle(gymapi.Vec3(0, 0, 1), np.random.uniform(-math.pi, math.pi))
-    bolt_handle = gym.create_actor(env, bolt_asset, bolt_pose, "bolt", i, 0)
-    bolt_props = gym.get_actor_rigid_shape_properties(env, bolt_handle)
-    #bolt_props[0].filter = imesh
-    bolt_props[0].friction = 0.0  # default = ?
-    bolt_props[0].rolling_friction = 0.0  # default = 0.0
-    bolt_props[0].torsion_friction = 0.0  # default = 0.0
-    bolt_props[0].restitution = 0.0  # default = ?
-    bolt_props[0].compliance = 0.0  # default = 0.0
-    bolt_props[0].thickness = 0.0  # default = 0.0
-    gym.set_actor_rigid_shape_properties(env, bolt_handle, bolt_props)
-
-    # get global index of box in rigid body state tensor
-    bolt_idx = gym.get_actor_rigid_body_index(env, bolt_handle, 0, gymapi.DOMAIN_SIM)
-    bolt_idxs.append(bolt_idx)
+    
 
     # add nut
-    nut_pose.p.x = bolt_pose.p.x - 0.2 + np.random.uniform(-0.04, 0.04)
-    nut_pose.p.y = bolt_pose.p.y + 0.2 + np.random.uniform(-0.04, 0.04)
+    nut_pose.p.x = table_pose.p.x + np.random.uniform(-0.04, 0.04)
+    nut_pose.p.y = table_pose.p.y + 0.2 + np.random.uniform(-0.04, 0.04)
     nut_pose.p.z = table_dims.z + 0.02
     nut_handle = gym.create_actor(env, nut_asset, nut_pose, "nut", i, 0)
     nut_props = gym.get_actor_rigid_shape_properties(env, nut_handle)
@@ -420,9 +351,38 @@ for i in range(num_envs):
     nut_props[0].thickness = 0.0  # default = 0.0
     gym.set_actor_rigid_shape_properties(env, nut_handle, nut_props)
 
+    print("Nut Position:", nut_pose.p)
+    print("Basket Position:", basket_pose.p)
+
+
     # get global index of box in rigid body state tensor
     nut_idx = gym.get_actor_rigid_body_index(env, nut_handle, 0, gymapi.DOMAIN_SIM)
     nut_idxs.append(nut_idx)
+    
+    # add basket
+    basket_pose.p.x = table_pose.p.x + 0.05 # 0.35  -> 0.5 for place nut
+    basket_pose.p.y = table_pose.p.y - 0.3   # -0.3  -> 0.3
+    basket_pose.p.z = table_dims.z           # 0.1   -> 1.0
+    basket_pose.r = gymapi.Quat.from_axis_angle(gymapi.Vec3(0, 0, 1), 0)
+    basket_handle = gym.create_actor(env, basket_asset, basket_pose, "basket", i, 0)
+    basket_props = gym.get_actor_rigid_shape_properties(env, basket_handle)
+    basket_props[0].friction = 0.0  # default = ?
+    basket_props[0].rolling_friction = 0.0  # default = 0.0
+    basket_props[0].torsion_friction = 0.0  # default = 0.0
+    basket_props[0].restitution = 0.0  # default = ?
+    basket_props[0].compliance = 0.0  # default = 0.0
+    basket_props[0].thickness = 0.0  # default = 0.0
+
+    gym.set_actor_rigid_shape_properties(env, basket_handle, basket_props)
+
+    # get global index of box in rigid body state tensor
+    basket_idx = gym.get_actor_rigid_body_index(env, basket_handle, 0, gymapi.DOMAIN_SIM)
+    basket_idxs.append(basket_idx)
+
+    #gym.set_actor_scale(env, basket_handle, 0.002)
+    #gym.set_actor_rigid_shape_properties(env, basket_handle, [{"mesh_normal_mode": gymapi.MESH_NORMAL_MODE_VISUALIZE_COLLISION}])
+
+
 
     # add franka
     franka_handle = gym.create_actor(env, franka_asset, franka_pose, "franka", i, 0)
@@ -441,9 +401,9 @@ for i in range(num_envs):
     hand_idxs.append(hand_idx)
 
     # create env's fsm - run them on CPU
-    fsms.append(ScrewFSM(sim_params.dt, 0.016, 0.1, 30.0 / 180.0 * np.pi, 60.0/180.0 * np.pi, fsm_device, i))
+    fsms.append(ScrewFSM(sim_params.dt, 0.016, 0.1, fsm_device, i))
 
-##########################################################################3
+##########################################################################
 
 # point camera at middle env
 cam_pos = gymapi.Vec3(1, 0, 0.6)
@@ -463,7 +423,7 @@ _jacobian = gym.acquire_jacobian_tensor(sim, "franka")
 jacobian = gymtorch.wrap_tensor(_jacobian)
 
 # jacobian entries corresponding to franka hand
-j_eef = jacobian[:, franka_hand_index - 1, :, :5] 
+j_eef = jacobian[:, franka_hand_index - 1, :, :6]
 
 # get rigid body state tensor
 _rb_states = gym.acquire_rigid_body_state_tensor(sim)
@@ -472,7 +432,7 @@ rb_states = gymtorch.wrap_tensor(_rb_states)
 # get dof state tensor
 _dof_states = gym.acquire_dof_state_tensor(sim)
 dof_states = gymtorch.wrap_tensor(_dof_states)
-dof_pos = dof_states[:, 0].view(num_envs, 7, 1)
+dof_pos = dof_states[:, 0].view(num_envs, 8, 1)
 
 # Set action tensors
 pos_action = torch.zeros_like(dof_pos).squeeze(-1)
@@ -497,22 +457,22 @@ while not gym.query_viewer_has_closed(viewer):
 
     rb_states_fsm = rb_states.to(fsm_device)
     nut_poses = rb_states_fsm[nut_idxs, :7]
-    bolt_poses = rb_states_fsm[bolt_idxs, :7]
+    basket_poses = rb_states_fsm[basket_idxs, :7]
     hand_poses = rb_states_fsm[hand_idxs, :7]
     dof_pos_fsm = dof_pos.to(fsm_device)
-    cur_grip_sep_fsm = dof_pos_fsm[:, 5] - dof_pos_fsm[:, 6]
-    #print(cur_grip_sep_fsm, " = ", dof_pos_fsm[:, 5],  dof_pos_fsm[:, 6])
+    cur_grip_sep_fsm = dof_pos_fsm[:, 6] - dof_pos_fsm[:, 7]
+    #print(cur_grip_sep_fsm, " = ", dof_pos_fsm[:, 6],  dof_pos_fsm[:, 7])
     for env_idx in range(num_envs):
-        fsms[env_idx].update(nut_poses[env_idx, :], bolt_poses[env_idx, :], hand_poses[env_idx, :], cur_grip_sep_fsm[env_idx])
+        fsms[env_idx].update(nut_poses[env_idx, :], basket_poses[env_idx, :], hand_poses[env_idx, :], cur_grip_sep_fsm[env_idx])
         d_pose[env_idx, :] = fsms[env_idx].d_pose
         grip_sep[env_idx] = fsms[env_idx].gripper_separation
 
-    pos_action[:, :5] = dof_pos.squeeze(-1)[:, :5] + control_ik(d_pose.unsqueeze(-1).to(device), damping, j_eef, num_envs)
+    pos_action[:, :6] = dof_pos.squeeze(-1)[:, :6] + control_ik(d_pose.unsqueeze(-1).to(device), damping, j_eef, num_envs)
     # gripper actions depend on distance between hand and box
 
     grip_acts = torch.cat((0.5 * grip_sep, 0.5 * grip_sep), 1).to(device)
-    pos_action[:, 5] = grip_acts[:, 0]
-    pos_action[:, 6] = -grip_acts[:, 1]
+    pos_action[:, 6] = grip_acts[:, 0]
+    pos_action[:, 7] = -grip_acts[:, 1]
     # gripper의 회전 방향에 따라 - 설정해주기
 
 
