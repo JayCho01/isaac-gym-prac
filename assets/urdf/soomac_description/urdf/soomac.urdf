@@ -130,47 +130,49 @@
   </collision>
 </link>
 
+
+<link name="link7_finger_r_1">
+  <inertial>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <mass value="0.04558518327790625"/>
+    <inertia ixx="3.3e-05" iyy="1.3e-05" izz="2.6e-05" ixy="-4e-06" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.005 -0.45 -0.4" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.005 -0.45 -0.4" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
 <link name="link8_finger_l_1">
   <inertial>
-    <origin xyz="-0.2465274266357249 0.1494557416425198 -0.34573996214924124" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
     <mass value="0.04558023056880734"/>
     <inertia ixx="3.3e-05" iyy="1.3e-05" izz="2.6e-05" ixy="4e-06" iyz="-0.0" ixz="-0.0"/>
   </inertial>
   <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="-0.005 -0.45 -0.4" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="-0.005 -0.45 -0.4" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision>
 </link>
 
-<link name="link7_finger_r_1">
-  <inertial>
-    <origin xyz="-0.26812321532404115 0.14945971993542184 -0.34559812229729625" rpy="0 0 0"/>
-    <mass value="0.04558518327790625"/>
-    <inertia ixx="3.3e-05" iyy="1.3e-05" izz="2.6e-05" ixy="-4e-06" iyz="0.0" ixz="-0.0"/>
-  </inertial>
-  <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-    <material name="silver"/>
-  </visual>
-  <collision>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-  </collision>
-</link>
 
 <joint name="link2_to_base_link" type="revolute">
   <origin xyz="7.4e-05 0.000224 0.038032" rpy="0 0 0"/>
@@ -208,19 +210,19 @@
 </joint>
 
 <joint name="Slider 8" type="prismatic">
-  <origin xyz="-0.0205 0.0485 0.0" rpy="0 0 0"/>
-  <parent link="link6_gripper_1"/>
-  <child link="link8_finger_l_1"/>
-  <axis xyz="1.0 0.0 0.0"/>
-  <limit upper="0.031" lower="0.003" effort="100" velocity="100"/>
-</joint>
-
-<joint name="Slider 9" type="prismatic">
-  <origin xyz="-0.0205 0.0485 0.0" rpy="0 0 0"/>
+  <origin xyz="0.0 0.05 0.0" rpy="0 0 0"/>
   <parent link="link6_gripper_1"/>
   <child link="link7_finger_r_1"/>
   <axis xyz="1.0 0.0 0.0"/>
-  <limit upper="-0.003" lower="-0.031" effort="100" velocity="100"/>
+  <limit upper="0.000" lower="-0.031" effort="100" velocity="100"/>
+</joint>
+
+<joint name="Slider 9" type="prismatic">
+  <origin xyz="0.0 0.05 0.0" rpy="0 0 0"/>
+  <parent link="link6_gripper_1"/>
+  <child link="link8_finger_l_1"/>
+  <axis xyz="1.0 0.0 0.0"/>
+  <limit upper="0.031" lower="0.000" effort="100" velocity="100"/>
 </joint>
 
 </robot>

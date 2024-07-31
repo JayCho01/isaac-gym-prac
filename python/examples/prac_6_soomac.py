@@ -44,8 +44,8 @@ class ScrewFSM:
         self._state = "go_above_nut"
 
         # control / position constants:
-        self._above_offset = torch.tensor([0, 0, 0.1 + self._bolt_height], dtype=torch.float32, device=self.device)
-        self._grip_offset = torch.tensor([0, 0, 0.053 + self._nut_height], dtype=torch.float32, device=self.device)
+        self._above_offset = torch.tensor([0, 0, 0.20], dtype=torch.float32, device=self.device)
+        self._grip_offset = torch.tensor([0, 0, 0.13 + self._nut_height], dtype=torch.float32, device=self.device)
         self._lift_offset = torch.tensor([0, 0, 0.15 + self._bolt_height], dtype=torch.float32, device=self.device)
         self._above_bolt_offset = torch.tensor([0, 0, self._bolt_height], dtype=torch.float32, device=self.device) + self._grip_offset
         self._on_bolt_offset = torch.tensor([0, 0, 0.5 * self._bolt_height + 0.025], dtype=torch.float32, device=self.device) + self._grip_offset
@@ -60,7 +60,7 @@ class ScrewFSM:
         self._dpose = torch.zeros(6, dtype=torch.float32, device=self.device)
         self._gripper_separation = 0.0
 
-        self._error_offset = 2e-3
+        self._error_offset = 5e-2
 
     # 목표 위치와 로봇의 현재 자세 사이의 거리를 계산
     def get_dp_from_target(self, target_pos, target_quat, hand_pose) -> float:
@@ -86,7 +86,7 @@ class ScrewFSM:
             if error < self._error_offset:
                 newState = "grip"
         elif self._state == "grip":
-            self._gripper_separation = 0.0
+            self._gripper_separation = 0.025
             target_pos = nut_pose[:3] + self._grip_offset
             targetQ = quat_mul(nut_pose[3:], self._nut_grab_q)
             error = self.get_dp_from_target(target_pos, targetQ, hand_pose)
@@ -94,7 +94,7 @@ class ScrewFSM:
             if error < 1e-2 and gripped:
                 newState = "lift"
         elif self._state == "lift":
-            self._gripper_separation = 0.0
+            self._gripper_separation = 0.025
             target_pos = nut_pose[:3]
             target_pos[2] = bolt_pose[2] + 0.004
             target_pos = target_pos + self._lift_offset
@@ -102,14 +102,14 @@ class ScrewFSM:
             if error < self._error_offset:
                 newState = "go_above_bolt"
         elif self._state == "go_above_bolt":
-            self._gripper_separation = 0.01
+            self._gripper_separation = 0.025
             target_pos = bolt_pose[:3]
             target_pos = target_pos + self._above_bolt_offset
             error = self.get_dp_from_target(target_pos, self._hand_down_quat, hand_pose)
             if error < self._error_offset:
                 newState = "go_on_bolt"
         elif self._state == "go_on_bolt":
-            self._gripper_separation = 0.01
+            self._gripper_separation = 0.025
             target_pos = bolt_pose[:3]
             target_pos[2] = bolt_pose[2]
             target_pos = target_pos + self._on_bolt_offset
@@ -345,6 +345,7 @@ default_dof_pos_tensor = to_torch(default_dof_pos, device=device)
 franka_link_dict = gym.get_asset_rigid_body_dict(franka_asset)
 franka_hand_index = franka_link_dict["link6_gripper_1"]
 
+
 # configure env grid
 num_envs = args.num_envs
 num_per_row = int(math.sqrt(num_envs))
@@ -437,7 +438,7 @@ for i in range(num_envs):
     gym.set_actor_dof_position_targets(env, franka_handle, default_dof_pos)
 
     # get global index of hand in rigid body state tensor
-    hand_idx = gym.find_actor_rigid_body_index(env, franka_handle, "ur_grip_site", gymapi.DOMAIN_SIM)
+    hand_idx = gym.find_actor_rigid_body_index(env, franka_handle, "link6_gripper_1", gymapi.DOMAIN_SIM)
     hand_idxs.append(hand_idx)
 
     # create env's fsm - run them on CPU
@@ -500,8 +501,8 @@ while not gym.query_viewer_has_closed(viewer):
     bolt_poses = rb_states_fsm[bolt_idxs, :7]
     hand_poses = rb_states_fsm[hand_idxs, :7]
     dof_pos_fsm = dof_pos.to(fsm_device)
-    cur_grip_sep_fsm = dof_pos_fsm[:, 5] - dof_pos_fsm[:, 6]
-    #print(cur_grip_sep_fsm, " = ", dof_pos_fsm[:, 5],  dof_pos_fsm[:, 6])
+    cur_grip_sep_fsm = -dof_pos_fsm[:, 5] + dof_pos_fsm[:, 6]
+    print(cur_grip_sep_fsm, " = ", dof_pos_fsm[:, 5],  dof_pos_fsm[:, 6])
     for env_idx in range(num_envs):
         fsms[env_idx].update(nut_poses[env_idx, :], bolt_poses[env_idx, :], hand_poses[env_idx, :], cur_grip_sep_fsm[env_idx])
         d_pose[env_idx, :] = fsms[env_idx].d_pose
@@ -511,8 +512,8 @@ while not gym.query_viewer_has_closed(viewer):
     # gripper actions depend on distance between hand and box
 
     grip_acts = torch.cat((0.5 * grip_sep, 0.5 * grip_sep), 1).to(device)
-    pos_action[:, 5] = grip_acts[:, 0]
-    pos_action[:, 6] = -grip_acts[:, 1]
+    pos_action[:, 5] = -grip_acts[:, 0]
+    pos_action[:, 6] = +grip_acts[:, 1]
     # gripper의 회전 방향에 따라 - 설정해주기
 
 
