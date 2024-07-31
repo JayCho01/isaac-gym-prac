@@ -1,0 +1,9 @@
+<launch>
+
+<rosparam file="$(find soomac_description)/launch/controller.yaml" command="load"/>
+<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="soomac" args="회전 7_position_controller 회전 8_position_controller 회전 9_position_controller 회전 10_position_controller 회전 11_position_controller joint_state_controller "/>
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+  <remap from="/joint_states" to="/soomac/joint_states"/>
+</node>
+
+</launch>

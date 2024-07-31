@@ -1,14 +1,17 @@
 <?xml version="1.0" ?>
-<robot name="(soomac" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="soomac" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <xacro:include filename="$(find soomac_description)/urdf/materials.xacro" />
 <xacro:include filename="$(find soomac_description)/urdf/soomac.trans" />
 <xacro:include filename="$(find soomac_description)/urdf/soomac.gazebo" />
+
+
+
 <link name="base_link">
   <inertial>
-    <origin xyz="1.382018515449909e-05 -0.0005045956311069184 0.020522282272331886" rpy="0 0 0"/>
-    <mass value="0.31335946697273154"/>
-    <inertia ixx="0.000205" iyy="0.000205" izz="0.000322" ixy="0.0" iyz="-0.0" ixz="-0.0"/>
+    <origin xyz="1.3820185154499092e-05 -0.0005045956311069184 0.020522282272331886" rpy="0 0 0"/>
+    <mass value="1.5026706265949556"/>
+    <inertia ixx="0.000984" iyy="0.000985" izz="0.001544" ixy="0.0" iyz="-1e-06" ixz="-0.0"/>
   </inertial>
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -28,8 +31,8 @@
 <link name="link2_1">
   <inertial>
     <origin xyz="-0.004855588947938449 -1.5745210662496947e-05 0.0391777283631466" rpy="0 0 0"/>
-    <mass value="0.3584319251227706"/>
-    <inertia ixx="0.000257" iyy="0.000207" izz="0.000306" ixy="-1e-06" iyz="-0.0" ixz="1.1e-05"/>
+    <mass value="1.718809170564294"/>
+    <inertia ixx="0.001233" iyy="0.000991" izz="0.001466" ixy="-4e-06" iyz="-1e-06" ixz="5.4e-05"/>
   </inertial>
   <visual>
     <origin xyz="-7.4e-05 -0.000224 -0.038032" rpy="0 0 0"/>
@@ -48,9 +51,9 @@
 
 <link name="link3_1">
   <inertial>
-    <origin xyz="0.020216163584749213 -0.0004376011848175338 0.17800937097089725" rpy="0 0 0"/>
-    <mass value="0.22806001266597076"/>
-    <inertia ixx="0.003273" iyy="0.003276" izz="4.1e-05" ixy="0.0" iyz="8e-06" ixz="-2.6e-05"/>
+    <origin xyz="0.0202161635847504 -4.0144523101581786e-07 0.1780099079809248" rpy="0 0 0"/>
+    <mass value="1.0936292604935065"/>
+    <inertia ixx="0.015694" iyy="0.015708" izz="0.000195" ixy="-0.0" iyz="-0.0" ixz="-0.000126"/>
   </inertial>
   <visual>
     <origin xyz="-0.024372 -0.015535 -0.082303" rpy="0 0 0"/>
@@ -69,19 +72,19 @@
 
 <link name="link4_1">
   <inertial>
-    <origin xyz="-0.019771957035165565 0.21560257804823904 0.00042689336209178474" rpy="0 0 0"/>
-    <mass value="0.21493203724961896"/>
-    <inertia ixx="0.002677" iyy="4.5e-05" izz="0.002682" ixy="6e-06" iyz="-5e-06" ixz="0.0"/>
+    <origin xyz="-0.01977195703514885 0.21560279425657583 -1.3265169511611496e-05" rpy="0 0 0"/>
+    <mass value="1.030675926945332"/>
+    <inertia ixx="0.012836" iyy="0.000214" izz="0.012863" ixy="2.7e-05" iyz="-0.0" ixz="-0.0"/>
   </inertial>
   <visual>
-    <origin xyz="-0.064747 -0.01479 -0.385552" rpy="0 0 0"/>
+    <origin xyz="-0.064747 -0.015535 -0.385553" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link4_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="-0.064747 -0.01479 -0.385552" rpy="0 0 0"/>
+    <origin xyz="-0.064747 -0.015535 -0.385553" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link4_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -90,90 +93,96 @@
 
 <link name="link5_1">
   <inertial>
-    <origin xyz="-0.019524198771274214 0.02035642164026913 -0.0072839064452169255" rpy="0 0 0"/>
-    <mass value="0.11465885199939559"/>
-    <inertia ixx="5.6e-05" iyy="2.9e-05" izz="4.5e-05" ixy="2e-06" iyz="1e-05" ixz="-1e-06"/>
+    <origin xyz="-0.019524198771248544 0.02035587176782283 -0.0072839708015024485" rpy="0 0 0"/>
+    <mass value="0.549830169942123"/>
+    <inertia ixx="0.000269" iyy="0.000137" izz="0.000218" ixy="1.1e-05" iyz="5e-05" ixz="-4e-06"/>
   </inertial>
   <visual>
-    <origin xyz="-0.024997 -0.342539 -0.386208" rpy="0 0 0"/>
+    <origin xyz="-0.024997 -0.343285 -0.38554" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link5_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="-0.024997 -0.342539 -0.386208" rpy="0 0 0"/>
+    <origin xyz="-0.024997 -0.343285 -0.38554" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link5_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision>
 </link>
+
 
 <link name="link6_gripper_1">
   <inertial>
-    <origin xyz="6.660080040602964e-06 0.03129948994934928 -0.00850619058730856" rpy="0 0 0"/>
-    <mass value="0.13960741404599217"/>
-    <inertia ixx="5.7e-05" iyy="8.9e-05" izz="8.2e-05" ixy="-0.0" iyz="-5e-06" ixz="-0.0"/>
+    <origin xyz="6.660080069166921e-06 0.031298940076902815 -0.008506254943594194" rpy="0 0 0"/>
+    <mass value="0.6694674405992905"/>
+    <inertia ixx="0.000271" iyy="0.000428" izz="0.000393" ixy="-0.0" iyz="-2.2e-05" ixz="-0.0"/>
   </inertial>
   <visual>
-    <origin xyz="-0.004497 -0.391039 -0.386208" rpy="0 0 0"/>
+    <origin xyz="-0.004497 -0.391785 -0.38554" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link6_gripper_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="-0.004497 -0.391039 -0.386208" rpy="0 0 0"/>
+    <origin xyz="-0.004497 -0.391785 -0.38554" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link6_gripper_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-  </collision>
-</link>
-
-<link name="link8_finger_l_1">
-  <inertial>
-    <origin xyz="-0.2465274266357249 0.1494557416425198 -0.34573996214924124" rpy="0 0 0"/>
-    <mass value="0.04558023056880734"/>
-    <inertia ixx="3.3e-05" iyy="1.3e-05" izz="2.6e-05" ixy="4e-06" iyz="-0.0" ixz="-0.0"/>
-  </inertial>
-  <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-    <material name="silver"/>
-  </visual>
-  <collision>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision>
 </link>
 
 <link name="link7_finger_r_1">
   <inertial>
-    <origin xyz="-0.26812321532404115 0.14945971993542184 -0.34559812229729625" rpy="0 0 0"/>
-    <mass value="0.04558518327790625"/>
-    <inertia ixx="3.3e-05" iyy="1.3e-05" izz="2.6e-05" ixy="-4e-06" iyz="0.0" ixz="-0.0"/>
+    <origin xyz="-0.25575823794491925 0.1487141700629765 -0.3449996385481648" rpy="0 0 0"/>
+    <mass value="0.2185972441854391"/>
+    <inertia ixx="0.000156" iyy="6.2e-05" izz="0.000125" ixy="-2e-05" iyz="0.0" ixz="-0.0"/>
   </inertial>
   <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="-0.241867 -0.318206 -0.73054" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="-0.241867 -0.318206 -0.73054" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision>
 </link>
 
+<link name="link8_finger_l_1">
+  <inertial>
+    <origin xyz="-0.2670413034528619 0.14871019177007172 -0.34500057461094463" rpy="0 0 0"/>
+    <mass value="0.21857349417540464"/>
+    <inertia ixx="0.000156" iyy="6.2e-05" izz="0.000125" ixy="2e-05" iyz="-0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.289967 -0.318206 -0.73054" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.289967 -0.318206 -0.73054" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+
+
+
+
 <joint name="link2_to_base_link" type="revolute">
   <origin xyz="7.4e-05 0.000224 0.038032" rpy="0 0 0"/>
+  <limit upper="6.28318" lower="-6.28318" velocity="2.0944" effort="330.0" />
   <parent link="base_link"/>
   <child link="link2_1"/>
   <axis xyz="0.0 -0.0 1.0"/>
@@ -181,20 +190,23 @@
 
 <joint name="link3_to_link2" type="revolute">
   <origin xyz="0.024298 0.015311 0.044271" rpy="0 0 0"/>
+  <limit upper="6.28318" lower="-6.28318" velocity="2.0944" effort="330.0" />
   <parent link="link2_1"/>
   <child link="link3_1"/>
   <axis xyz="1.0 -0.0 -0.0"/>
 </joint>
 
 <joint name="link4_to_link3" type="revolute">
-  <origin xyz="0.040375 -0.000745 0.303249" rpy="0 0 0"/>
+  <origin xyz="0.040375 0.0 0.30325" rpy="0 0 0"/>
+  <limit upper="6.28318" lower="-6.28318" velocity="2.0944" effort="330.0" />
   <parent link="link3_1"/>
   <child link="link4_1"/>
   <axis xyz="1.0 0.0 -0.0"/>
 </joint>
 
 <joint name="link5_to_link4" type="revolute">
-  <origin xyz="-0.03975 0.327749 0.000656" rpy="0 0 0"/>
+  <origin xyz="-0.03975 0.32775 -1.3e-05" rpy="0 0 0"/>
+  <limit upper="6.28318" lower="-6.28318" velocity="2.0944" effort="330.0" />
   <parent link="link4_1"/>
   <child link="link5_1"/>
   <axis xyz="-1.0 -0.0 0.0"/>
@@ -202,25 +214,26 @@
 
 <joint name="link6_to_link5" type="revolute">
   <origin xyz="-0.0205 0.0485 0.0" rpy="0 0 0"/>
+  <limit upper="6.28318" lower="-6.28318" velocity="2.0944" effort="330.0" />
   <parent link="link5_1"/>
   <child link="link6_gripper_1"/>
-  <axis xyz="-0.0 1.0 0.0"/>
+  <axis xyz="0.0 1.0 0.0"/>
 </joint>
 
-<joint name="Slider 8" type="prismatic">
-  <origin xyz="-0.0205 0.0485 0.0" rpy="0 0 0"/>
-  <parent link="link6_gripper_1"/>
-  <child link="link8_finger_l_1"/>
-  <axis xyz="1.0 0.0 0.0"/>
-  <limit upper="0.031" lower="0.003" effort="100" velocity="100"/>
-</joint>
-
-<joint name="Slider 9" type="prismatic">
+<joint name="link7_to_link6" type="prismatic">
   <origin xyz="-0.0205 0.0485 0.0" rpy="0 0 0"/>
   <parent link="link6_gripper_1"/>
   <child link="link7_finger_r_1"/>
-  <axis xyz="1.0 0.0 0.0"/>
-  <limit upper="-0.003" lower="-0.031" effort="100" velocity="100"/>
+  <axis xyz="-1.0 -0.0 0.0"/>
+  <limit  lower="0.0" upper="0.0281" effort="100" velocity="100"/>
+</joint>
+
+<joint name="link8_to_link6" type="prismatic">
+  <origin xyz="-0.0205 0.0485 0.0" rpy="0 0 0"/>
+  <parent link="link6_gripper_1"/>
+  <child link="link8_finger_l_1"/>
+  <axis xyz="1.0 -0.0 0.0"/>
+  <limit upper="0.031" lower="0.00295" effort="100" velocity="100"/>
 </joint>
 
 </robot>

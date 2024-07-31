@@ -300,7 +300,7 @@ franka_asset_file = "urdf/soomac_description/urdf/soomac.urdf"
 asset_options = gymapi.AssetOptions()
 asset_options.armature = 0.01
 asset_options.fix_base_link = True
-asset_options.disable_gravity = True
+asset_options.disable_gravity = False
 asset_options.flip_visual_attachments = False
 franka_asset = gym.load_asset(sim, asset_root, franka_asset_file, asset_options)
 
