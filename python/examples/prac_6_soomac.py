@@ -45,7 +45,7 @@ class ScrewFSM:
 
         # control / position constants:
         self._above_offset = torch.tensor([0, 0, 0.20], dtype=torch.float32, device=self.device)
-        self._grip_offset = torch.tensor([0, 0, 0.13 + self._nut_height], dtype=torch.float32, device=self.device)
+        self._grip_offset = torch.tensor([0, 0, 0.14 + self._nut_height], dtype=torch.float32, device=self.device)
         self._lift_offset = torch.tensor([0, 0, 0.15 + self._bolt_height], dtype=torch.float32, device=self.device)
         self._above_bolt_offset = torch.tensor([0, 0, self._bolt_height], dtype=torch.float32, device=self.device) + self._grip_offset
         self._on_bolt_offset = torch.tensor([0, 0, 0.5 * self._bolt_height + 0.025], dtype=torch.float32, device=self.device) + self._grip_offset
@@ -86,7 +86,7 @@ class ScrewFSM:
             if error < self._error_offset:
                 newState = "grip"
         elif self._state == "grip":
-            self._gripper_separation = 0.025
+            self._gripper_separation = 0.0285
             target_pos = nut_pose[:3] + self._grip_offset
             targetQ = quat_mul(nut_pose[3:], self._nut_grab_q)
             error = self.get_dp_from_target(target_pos, targetQ, hand_pose)

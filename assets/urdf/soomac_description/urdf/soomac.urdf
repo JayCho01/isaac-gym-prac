@@ -138,14 +138,14 @@
     <inertia ixx="3.3e-05" iyy="1.3e-05" izz="2.6e-05" ixy="-4e-06" iyz="0.0" ixz="-0.0"/>
   </inertial>
   <visual>
-    <origin xyz="-0.005 -0.45 -0.4" rpy="0 0 0"/>
+    <origin xyz="-0.005 -0.44 -0.386" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="-0.005 -0.45 -0.4" rpy="0 0 0"/>
+    <origin xyz="-0.005 -0.44 -0.386" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link7_finger_r_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -159,14 +159,14 @@
     <inertia ixx="3.3e-05" iyy="1.3e-05" izz="2.6e-05" ixy="4e-06" iyz="-0.0" ixz="-0.0"/>
   </inertial>
   <visual>
-    <origin xyz="-0.005 -0.45 -0.4" rpy="0 0 0"/>
+    <origin xyz="-0.005 -0.44 -0.386" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="-0.005 -0.45 -0.4" rpy="0 0 0"/>
+    <origin xyz="-0.005 -0.44 -0.386" rpy="0 0 0"/>
     <geometry>
       <mesh filename="package://soomac_description/meshes/link8_finger_l_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
