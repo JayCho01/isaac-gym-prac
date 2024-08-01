@@ -225,4 +225,18 @@
   <limit upper="0.031" lower="0.000" effort="100" velocity="100"/>
 </joint>
 
+<joint name="grip_joint" type="fixed">
+     <parent link="link6_gripper_1"/>
+     <child link="grip_site"/>
+     <origin rpy="1.57079632679 0 0" xyz="0 0.1 0"/>
+    </joint>
+    <link name="grip_site">
+        <visual>
+        <geometry>
+            <sphere radius="0.005"/>
+        </geometry>
+        <material name="Vis"/>
+        </visual>
+    </link>
+
 </robot>

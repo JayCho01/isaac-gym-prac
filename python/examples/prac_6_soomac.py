@@ -13,6 +13,7 @@ import torch
 def orientation_error(desired, current):
     cc = quat_conjugate(current)
     q_r = quat_mul(desired, cc)
+    #print(q_r, q_r[0:3] * torch.sign(q_r[3]))
     return q_r[0:3] * torch.sign(q_r[3])
 
 # 역기구학 제어 함수
@@ -45,11 +46,11 @@ class ScrewFSM:
 
         # control / position constants:
         self._above_offset = torch.tensor([0, 0, 0.20], dtype=torch.float32, device=self.device)
-        self._grip_offset = torch.tensor([0, 0, 0.14 + self._nut_height], dtype=torch.float32, device=self.device)
-        self._lift_offset = torch.tensor([0, 0, 0.15 + self._bolt_height], dtype=torch.float32, device=self.device)
+        self._grip_offset = torch.tensor([0, 0, 0.05 + self._nut_height], dtype=torch.float32, device=self.device)
+        self._lift_offset = torch.tensor([0, 0, 0.05 + self._bolt_height], dtype=torch.float32, device=self.device)
         self._above_bolt_offset = torch.tensor([0, 0, self._bolt_height], dtype=torch.float32, device=self.device) + self._grip_offset
         self._on_bolt_offset = torch.tensor([0, 0, 0.5 * self._bolt_height + 0.025], dtype=torch.float32, device=self.device) + self._grip_offset
-        self._hand_down_quat = torch.tensor([-0.707107, 0.0, 0.0, 0.707107], dtype=torch.float32, device=self.device)
+        self._hand_down_quat = torch.tensor([0.0, 0.0, -0.707107, 0.707107], dtype=torch.float32, device=self.device)
         grab_angle = torch.tensor([np.pi / 6.0], dtype=torch.float32, device=self.device)
         grab_axis = torch.tensor([0, 0, 1], dtype=torch.float32, device=self.device)
         grab_quat = quat_from_angle_axis(grab_angle, grab_axis).squeeze()
@@ -60,12 +61,13 @@ class ScrewFSM:
         self._dpose = torch.zeros(6, dtype=torch.float32, device=self.device)
         self._gripper_separation = 0.0
 
-        self._error_offset = 5e-2
+        self._error_offset = 3e-2
 
     # 목표 위치와 로봇의 현재 자세 사이의 거리를 계산
     def get_dp_from_target(self, target_pos, target_quat, hand_pose) -> float:
         self._dpose[:3] = target_pos - hand_pose[:3]
-        self._dpose[3:] = orientation_error(target_quat, hand_pose[3:])
+        self._dpose[3:] = 0.5 * orientation_error(target_quat, hand_pose[3:])
+        print(self._dpose[:3], self._dpose[3:], "error = ", torch.norm(self._dpose, p=2))
         return torch.norm(self._dpose, p=2)
 
     # returns
@@ -86,15 +88,16 @@ class ScrewFSM:
             if error < self._error_offset:
                 newState = "grip"
         elif self._state == "grip":
-            self._gripper_separation = 0.0285
+            self._gripper_separation = 0.02
             target_pos = nut_pose[:3] + self._grip_offset
             targetQ = quat_mul(nut_pose[3:], self._nut_grab_q)
             error = self.get_dp_from_target(target_pos, targetQ, hand_pose)
-            gripped = (current_gripper_sep < 0.02)
+            print(error)
+            gripped = (current_gripper_sep < 0.023)
             if error < 1e-2 and gripped:
                 newState = "lift"
         elif self._state == "lift":
-            self._gripper_separation = 0.025
+            self._gripper_separation = 0.02
             target_pos = nut_pose[:3]
             target_pos[2] = bolt_pose[2] + 0.004
             target_pos = target_pos + self._lift_offset
@@ -102,7 +105,7 @@ class ScrewFSM:
             if error < self._error_offset:
                 newState = "go_above_bolt"
         elif self._state == "go_above_bolt":
-            self._gripper_separation = 0.025
+            self._gripper_separation = 0.02
             target_pos = bolt_pose[:3]
             target_pos = target_pos + self._above_bolt_offset
             error = self.get_dp_from_target(target_pos, self._hand_down_quat, hand_pose)
@@ -320,7 +323,7 @@ franka_mids = 0.3 * (franka_upper_limits + franka_lower_limits)
 
 # use position drive for all dofs
 franka_dof_props["driveMode"][:5].fill(gymapi.DOF_MODE_POS)
-franka_dof_props["stiffness"][:5].fill(150.0)
+franka_dof_props["stiffness"][:5].fill(100.0)
 franka_dof_props["damping"][:5].fill(40.0)
 # grippers
 franka_dof_props["driveMode"][5:].fill(gymapi.DOF_MODE_POS)
@@ -343,7 +346,7 @@ default_dof_pos_tensor = to_torch(default_dof_pos, device=device)
 
 # get link index of panda hand, which we will use as end effector
 franka_link_dict = gym.get_asset_rigid_body_dict(franka_asset)
-franka_hand_index = franka_link_dict["link6_gripper_1"]
+franka_hand_index = franka_link_dict["grip_site"]
 
 
 # configure env grid
@@ -438,7 +441,7 @@ for i in range(num_envs):
     gym.set_actor_dof_position_targets(env, franka_handle, default_dof_pos)
 
     # get global index of hand in rigid body state tensor
-    hand_idx = gym.find_actor_rigid_body_index(env, franka_handle, "link6_gripper_1", gymapi.DOMAIN_SIM)
+    hand_idx = gym.find_actor_rigid_body_index(env, franka_handle, "grip_site", gymapi.DOMAIN_SIM)
     hand_idxs.append(hand_idx)
 
     # create env's fsm - run them on CPU
@@ -500,9 +503,10 @@ while not gym.query_viewer_has_closed(viewer):
     nut_poses = rb_states_fsm[nut_idxs, :7]
     bolt_poses = rb_states_fsm[bolt_idxs, :7]
     hand_poses = rb_states_fsm[hand_idxs, :7]
+    #print("----", hand_poses)
     dof_pos_fsm = dof_pos.to(fsm_device)
     cur_grip_sep_fsm = -dof_pos_fsm[:, 5] + dof_pos_fsm[:, 6]
-    print(cur_grip_sep_fsm, " = ", dof_pos_fsm[:, 5],  dof_pos_fsm[:, 6])
+    #print(cur_grip_sep_fsm, " = ", dof_pos_fsm[:, 5],  dof_pos_fsm[:, 6])
     for env_idx in range(num_envs):
         fsms[env_idx].update(nut_poses[env_idx, :], bolt_poses[env_idx, :], hand_poses[env_idx, :], cur_grip_sep_fsm[env_idx])
         d_pose[env_idx, :] = fsms[env_idx].d_pose

@@ -13,6 +13,8 @@ import torch
 def orientation_error(desired, current):
     cc = quat_conjugate(current)
     q_r = quat_mul(desired, cc)
+    print(q_r, q_r[0:3] * torch.sign(q_r[3]))
+    
     return q_r[0:3] * torch.sign(q_r[3])
 
 # 역기구학 제어 함수
@@ -90,6 +92,7 @@ class ScrewFSM:
             target_pos = nut_pose[:3] + self._grip_offset
             targetQ = quat_mul(nut_pose[3:], self._nut_grab_q)
             error = self.get_dp_from_target(target_pos, targetQ, hand_pose)
+            #print(error)
             gripped = (current_gripper_sep < 0.02)
             if error < 1e-2 and gripped:
                 newState = "lift"
@@ -313,7 +316,7 @@ franka_upper_limits[6:8] = [0.50, 0.50]
 
 franka_ranges = franka_upper_limits - franka_lower_limits
 franka_mids = 0.3 * (franka_upper_limits + franka_lower_limits)
-print(franka_upper_limits, franka_lower_limits,franka_ranges,franka_mids)
+#print(franka_upper_limits, franka_lower_limits,franka_ranges,franka_mids)
 
 #[ 2.8973  1.7628  2.8973 -0.0698  2.8973  3.7525  2.8973  0.04    0.04  ] 
 #[-2.8973 -1.7628 -2.8973 -3.0718 -2.8973 -0.0175 -2.8973  0.      0.    ] 
@@ -503,7 +506,7 @@ while not gym.query_viewer_has_closed(viewer):
     hand_poses = rb_states_fsm[hand_idxs, :7]
     dof_pos_fsm = dof_pos.to(fsm_device)
     cur_grip_sep_fsm = dof_pos_fsm[:, 6] - dof_pos_fsm[:, 7]
-    print(cur_grip_sep_fsm, " = ", dof_pos_fsm[:, 6],  dof_pos_fsm[:, 7])
+    #print(cur_grip_sep_fsm, " = ", dof_pos_fsm[:, 6],  dof_pos_fsm[:, 7])
     for env_idx in range(num_envs):
         fsms[env_idx].update(nut_poses[env_idx, :], bolt_poses[env_idx, :], hand_poses[env_idx, :], cur_grip_sep_fsm[env_idx])
         d_pose[env_idx, :] = fsms[env_idx].d_pose
