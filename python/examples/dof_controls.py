@@ -66,8 +66,8 @@ env_lower = gymapi.Vec3(-spacing, 0.0, -spacing)
 env_upper = gymapi.Vec3(spacing, 0.0, spacing)
 
 # add cartpole urdf asset
-asset_root = "../../assets"
-asset_file = "urdf/cartpole.urdf"
+asset_root = "/home/jay/isaacgym/assets/urdf/"
+asset_file = "cartpole.urdf"
 
 # Load asset with default control type of position for all joints
 asset_options = gymapi.AssetOptions()
